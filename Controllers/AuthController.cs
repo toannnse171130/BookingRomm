@@ -23,7 +23,7 @@ namespace FPT_Booking_BE.Controllers
 
             if (token == null)
             {
-                return Unauthorized(new { message = "Email hoặc mật khẩu không đúng!" });
+                return Unauthorized(new { message = "Email hoặc mật khẩu không đúng!!" });
             }
 
             return Ok(new { token = token });

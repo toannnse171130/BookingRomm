@@ -39,9 +39,9 @@ namespace FPT_Booking_BE.Controllers
                 return BadRequest(new { message = result });
             }
 
-            return Ok(new { message = "Gửi yêu cầu đặt phòng thành công!" });
+            return Ok(new { message = "Gửi yêu cầu đặt phòng thành công!!" });
         }
-
+        
         [HttpPut("{id}/status")]
         [Authorize(Roles = "Admin,Manager")] 
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] BookingStatusUpdate request)
