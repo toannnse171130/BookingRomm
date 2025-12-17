@@ -167,6 +167,74 @@ namespace FPT_Booking_BE.Services
 
             return historyDtos;
         }
+
+        public async Task<List<BookingHistoryDto>> GetIndividualBookings(int? userId, string? status)
+        {
+            var bookings = await _bookingRepo.GetIndividualBookings(userId, status);
+
+            return bookings.Select(b => new BookingHistoryDto
+            {
+                Id = b.BookingId,
+                UserId = b.UserId,
+                BookingDate = b.BookingDate,
+                Status = b.Status,
+                FacilityName = b.Facility?.FacilityName ?? "",
+                SlotName = b.Slot?.SlotName ?? "",
+                StartTime = (TimeOnly)(b.Slot?.StartTime),
+                EndTime = (TimeOnly)(b.Slot?.EndTime)
+            }).ToList();
+        }
+
+        public async Task<List<BookingHistoryDto>> GetRecurringBookings(int? userId, string? status)
+        {
+            var bookings = await _bookingRepo.GetRecurringBookings(userId, status);
+
+            return bookings.Select(b => new BookingHistoryDto
+            {
+                Id = b.BookingId,
+                UserId = b.UserId,
+                BookingDate = b.BookingDate,
+                Status = b.Status,
+                FacilityName = b.Facility?.FacilityName ?? "",
+                SlotName = b.Slot?.SlotName ?? "",
+                StartTime = (TimeOnly)(b.Slot?.StartTime),
+                EndTime = (TimeOnly)(b.Slot?.EndTime)
+            }).ToList();
+        }
+
+        public async Task<List<RecurringBookingGroupDto>> GetRecurringBookingGroupsAsync(int? userId)
+        {
+            var groups = await _bookingRepo.GetRecurringBookingGroupsAsync(userId);
+
+            var result = groups.Select(group =>
+            {
+                var bookingsList = group.ToList();
+                var firstBooking = bookingsList.First();
+
+                return new RecurringBookingGroupDto
+                {
+                    RecurrenceGroupId = group.Key,
+                    UserId = firstBooking.UserId,
+                    UserName = firstBooking.User?.Email ?? "Unknown",
+                    FacilityId = firstBooking.FacilityId,
+                    FacilityName = firstBooking.Facility?.FacilityName ?? "",
+                    SlotId = firstBooking.SlotId,
+                    SlotName = firstBooking.Slot?.SlotName ?? "",
+                    Purpose = firstBooking.Purpose ?? "",
+                    StartDate = bookingsList.Min(b => b.BookingDate),
+                    EndDate = bookingsList.Max(b => b.BookingDate),
+                    TotalBookings = bookingsList.Count,
+                    PendingCount = bookingsList.Count(b => b.Status == "Pending"),
+                    ApprovedCount = bookingsList.Count(b => b.Status == "Approved"),
+                    RejectedCount = bookingsList.Count(b => b.Status == "Rejected"),
+                    CancelledCount = bookingsList.Count(b => b.Status == "Cancelled"),
+                    CreatedAt = firstBooking.CreatedAt ?? DateTime.Now
+                };
+            }).OrderByDescending(g => g.CreatedAt).ToList();
+
+            return result;
+        }
+
         public async Task<string> UpdateStatus(int bookingId, string status, string? rejectionReason)
         {
             var booking = await _context.Bookings

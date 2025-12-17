@@ -7,6 +7,9 @@ namespace FPT_Booking_BE.Repositories
         Task<Booking?> GetConflictingBooking(int facilityId, DateOnly date, int slotId);
         Task AddBooking(Booking booking);
         Task<IEnumerable<Booking>> GetBookings(int? userId, string? status);
+        Task<IEnumerable<Booking>> GetIndividualBookings(int? userId, string? status);
+        Task<IEnumerable<Booking>> GetRecurringBookings(int? userId, string? status);
+        Task<IEnumerable<IGrouping<string, Booking>>> GetRecurringBookingGroupsAsync(int? userId);
         Task<Booking?> GetBookingById(int id);
         Task UpdateBooking(Booking booking);
         Task<List<int>> GetBookedSlotIds(int facilityId, DateOnly date);

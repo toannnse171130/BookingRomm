@@ -7,6 +7,9 @@ namespace FPT_Booking_BE.Services
         Task<string> CreateBooking(int userId, BookingCreateRequest request);
 
         Task<List<BookingHistoryDto>> GetHistory(int userId);
+        Task<List<BookingHistoryDto>> GetIndividualBookings(int? userId, string? status);
+        Task<List<BookingHistoryDto>> GetRecurringBookings(int? userId, string? status);
+        Task<List<RecurringBookingGroupDto>> GetRecurringBookingGroupsAsync(int? userId);
 
         Task<string> UpdateStatus(int bookingId, string status, string? rejectionReason);
         Task<List<int>> GetBookedSlots(int facilityId, DateOnly date);

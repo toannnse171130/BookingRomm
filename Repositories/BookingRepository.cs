@@ -29,6 +29,7 @@ namespace FPT_Booking_BE.Repositories
                     b.BookingDate == date &&
                     b.SlotId == slotId &&
                     b.Status != "Cancelled" &&
+                    b.Status != "Pending" &&
                     b.Status != "Rejected"
                 );
         }
@@ -45,6 +46,55 @@ namespace FPT_Booking_BE.Repositories
             if (!string.IsNullOrEmpty(status)) query = query.Where(b => b.Status == status);
 
             return await query.OrderByDescending(b => b.BookingDate).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Booking>> GetIndividualBookings(int? userId, string? status)
+        {
+            var query = _context.Bookings
+                .Include(b => b.Facility)
+                .Include(b => b.Slot)
+                .Include(b => b.User)
+                .Where(b => string.IsNullOrEmpty(b.RecurrenceGroupId) || b.BookingType == "Individual")
+                .AsQueryable();
+
+            if (userId.HasValue) query = query.Where(b => b.UserId == userId);
+            if (!string.IsNullOrEmpty(status)) query = query.Where(b => b.Status == status);
+
+            return await query.OrderByDescending(b => b.BookingDate).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Booking>> GetRecurringBookings(int? userId, string? status)
+        {
+            var query = _context.Bookings
+                .Include(b => b.Facility)
+                .Include(b => b.Slot)
+                .Include(b => b.User)
+                .Where(b => !string.IsNullOrEmpty(b.RecurrenceGroupId) && b.BookingType == "Recurring")
+                .AsQueryable();
+
+            if (userId.HasValue) query = query.Where(b => b.UserId == userId);
+            if (!string.IsNullOrEmpty(status)) query = query.Where(b => b.Status == status);
+
+            return await query.OrderByDescending(b => b.BookingDate).ToListAsync();
+        }
+
+        public async Task<IEnumerable<IGrouping<string, Booking>>> GetRecurringBookingGroupsAsync(int? userId)
+        {
+            var query = _context.Bookings
+                .Include(b => b.Facility)
+                .Include(b => b.Slot)
+                .Include(b => b.User)
+                .ThenInclude(u => u.Role)
+                .Where(b => !string.IsNullOrEmpty(b.RecurrenceGroupId) && b.BookingType == "Recurring")
+                .AsQueryable();
+
+            if (userId.HasValue)
+            {
+                query = query.Where(b => b.UserId == userId);
+            }
+
+            var bookings = await query.ToListAsync();
+            return bookings.GroupBy(b => b.RecurrenceGroupId!);
         }
 
         public async Task<Booking?> GetBookingById(int id)

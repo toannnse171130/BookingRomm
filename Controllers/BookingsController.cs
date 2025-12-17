@@ -194,5 +194,63 @@ namespace FPT_Booking_BE.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Get only individual (non-recurring) bookings
+        /// </summary>
+        [HttpGet("individual")]
+        public async Task<IActionResult> GetIndividualBookings([FromQuery] int? userId, [FromQuery] string? status)
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var currentUserId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            // Non-admin users can only see their own bookings
+            if (role != "Admin" && role != "Manager" && role != "Staff" && role != "FacilityAdmin")
+            {
+                userId = currentUserId;
+            }
+
+            var bookings = await _bookingService.GetIndividualBookings(userId, status);
+            return Ok(bookings);
+        }
+
+        /// <summary>
+        /// Get only recurring bookings (individual bookings)
+        /// </summary>
+        [HttpGet("recurring")]
+        public async Task<IActionResult> GetRecurringBookings([FromQuery] int? userId, [FromQuery] string? status)
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var currentUserId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            // Non-admin users can only see their own bookings
+            if (role != "Admin" && role != "Manager" && role != "Staff" && role != "FacilityAdmin")
+            {
+                userId = currentUserId;
+            }
+
+            var bookings = await _bookingService.GetRecurringBookings(userId, status);
+            return Ok(bookings);
+        }
+
+        /// <summary>
+        /// Get recurring bookings grouped by series (ONE entry per recurring series)
+        /// Perfect for managers to approve/view recurring booking series
+        /// </summary>
+        [HttpGet("recurring-groups")]
+        public async Task<IActionResult> GetRecurringBookingGroups([FromQuery] int? userId)
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var currentUserId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            // Non-admin users can only see their own bookings
+            if (role != "Admin" && role != "Manager" && role != "Staff" && role != "FacilityAdmin")
+            {
+                userId = currentUserId;
+            }
+
+            var groups = await _bookingService.GetRecurringBookingGroupsAsync(userId);
+            return Ok(groups);
+        }
+
     }
 }   
