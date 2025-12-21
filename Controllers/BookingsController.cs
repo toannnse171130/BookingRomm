@@ -177,7 +177,7 @@ namespace FPT_Booking_BE.Controllers
 
             if (!isViewingPublicSchedule)
             {
-                if (role != "Admin" && role != "Manager" && role != "Staff" && role != "FacilityAdmin")
+                if (role != "Admin" && role != "Manager" && role != "Staff" && role != "FacilityAdmin" && role != "Security")
                 {
                     request.UserId = userId;
                 }
@@ -266,9 +266,9 @@ namespace FPT_Booking_BE.Controllers
         /// Get total count of all bookings
         /// </summary>
         [HttpGet("count")]
-        public async Task<IActionResult> GetTotalBookingsCount()
+        public async Task<IActionResult> GetTotalBookingsCount(int? userId)
         {
-            var count = await _bookingService.GetTotalBookingsCount();
+            var count = await _bookingService.GetTotalBookingsCount(userId);
             return Ok(new { totalBookings = count });
         }
 
