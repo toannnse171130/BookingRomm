@@ -5,6 +5,7 @@
         public string Title { get; set; } = null!;
         public string Description { get; set; } = "";
         public string Priority { get; set; } = "Normal"; 
+        public int BookingId { get; set; }
         public int? AssignedToId { get; set; }
     }
 
