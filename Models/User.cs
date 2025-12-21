@@ -23,6 +23,8 @@ public partial class User
 
     public virtual ICollection<Booking> BookingApprovers { get; set; } = new List<Booking>();
 
+    public virtual ICollection<Booking> BookingUpdatedByNavigations { get; set; } = new List<Booking>();
+
     public virtual ICollection<Booking> BookingUsers { get; set; } = new List<Booking>();
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
@@ -30,4 +32,8 @@ public partial class User
     public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
 
     public virtual Role Role { get; set; } = null!;
+
+    public virtual ICollection<SecurityTask> SecurityTaskAssignedToUsers { get; set; } = new List<SecurityTask>();
+
+    public virtual ICollection<SecurityTask> SecurityTaskCreatedByNavigations { get; set; } = new List<SecurityTask>();
 }
