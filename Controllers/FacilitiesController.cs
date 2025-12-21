@@ -19,11 +19,16 @@ namespace FPT_Booking_BE.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] string? name, [FromQuery] int? campusId, [FromQuery] int? typeId)
-        {
-            var facilities = await _facilityService.GetAllFacilities(name, campusId, typeId);
+        public async Task<IActionResult> GetAll(
+         [FromQuery] string? name,    
+         [FromQuery] int? typeId,
+        [FromQuery] int? campusId,
+        [FromQuery] int? slotId,    
+        [FromQuery] DateOnly? date) 
+            {
+            var facilities = await _facilityService.GetAllFacilities(name, campusId, typeId, slotId, date);
             return Ok(facilities);
-        }
+            }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] FacilityCreateRequest request)

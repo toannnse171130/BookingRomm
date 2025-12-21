@@ -31,6 +31,7 @@ namespace FPT_Booking_BE.Controllers
                 Description = request.Description,
                 Priority = request.Priority,
                 AssignedToUserId = request.AssignedToId,
+                BookingId = request.BookingId,
                 CreatedBy = userId,
                 Status = "Pending"
             };
@@ -40,10 +41,18 @@ namespace FPT_Booking_BE.Controllers
         }
 
         [HttpGet("pending")]
-        [Authorize(Roles = "Security,Admin,Manager")]
+        [Authorize(Roles = "Security,Admin,Manager,FacilityAdmin")]
         public async Task<IActionResult> GetPendingTasks()
         {
             var tasks = await _taskService.GetPendingTasksAsync();
+            return Ok(tasks);
+        }
+
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin,Manager,FacilityAdmin")]
+        public async Task<IActionResult> GetAllTasks()
+        {
+            var tasks = await _taskService.GetAllTasksAsync();
             return Ok(tasks);
         }
 
