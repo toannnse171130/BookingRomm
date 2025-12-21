@@ -14,13 +14,17 @@ namespace FPT_Booking_BE.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public IQueryable<Report> GetReportsQuery()
+        public async Task<IEnumerable<Report>> GetReports(int? userId, string? status)
         {
-            return _context.Reports
-                .Include(r => r.User)
-                .Include(r => r.Facility)
-                .Include(r => r.Booking)
+            var query = _context.Reports
+                .Include(r => r.Facility) 
+                .Include(r => r.User)    
                 .AsQueryable();
+
+            if (userId.HasValue) query = query.Where(r => r.UserId == userId);
+            if (!string.IsNullOrEmpty(status)) query = query.Where(r => r.Status == status);
+
+            return await query.OrderByDescending(r => r.CreatedAt).ToListAsync();
         }
 
         public async Task<Report?> GetReportById(int id)

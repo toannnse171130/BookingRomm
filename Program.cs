@@ -1,12 +1,11 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 using FPT_Booking_BE.Models;
 using FPT_Booking_BE.Repositories;
-using FPT_Booking_BE.Repositories.Interface;
 using FPT_Booking_BE.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,14 +73,12 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
-builder.Services.AddScoped<IFacilityTypeRepository, FacilityTypeRepository>();
 builder.Services.AddScoped<IFacilityTypeService, FacilityTypeService>();
 
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IAssetService, AssetService>();
 
 builder.Services.AddScoped<ISecurityTaskService, SecurityTaskService>();
-builder.Services.AddScoped<ISecurityTaskRepository, SecurityTaskRepository>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 
@@ -89,7 +86,6 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddScoped<ISemesterRepository, SemesterRepository>();
 builder.Services.AddScoped<ISemesterService, SemesterService>();
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

@@ -16,6 +16,7 @@ namespace FPT_Booking_BE.Services
         private readonly INotificationService _notificationService;
         private readonly ISlotRepository _slotRepo;
         private readonly ISemesterRepository _semesterRepo;
+        private readonly ISecurityTaskService _securityTaskService;
 
 
         public BookingService(
@@ -23,7 +24,8 @@ namespace FPT_Booking_BE.Services
             FptFacilityBookingContext context,
             INotificationService notificationService,
             ISlotRepository slotRepo,
-            ISemesterRepository semesterRepo
+            ISemesterRepository semesterRepo,
+            ISecurityTaskService securityTaskService
             )
         {
             _bookingRepo = bookingRepo;
@@ -31,6 +33,7 @@ namespace FPT_Booking_BE.Services
             _notificationService = notificationService;
             _slotRepo = slotRepo;
             _semesterRepo = semesterRepo;
+            _securityTaskService = securityTaskService;
         }
 
         public async Task<string> CreateBooking(int userId, BookingCreateRequest request)
@@ -112,7 +115,34 @@ namespace FPT_Booking_BE.Services
                 newBooking.Status = "Approved";
             }
 
-            await _bookingRepo.AddBooking(newBooking); 
+            await _bookingRepo.AddBooking(newBooking);
+            
+            // Create security task if booking is auto-approved (priority = 3)
+            if (GetRolePriority(currentUser.Role.RoleName) == 3)
+            {
+                try
+                {
+                    var slot = await _context.Slots.FindAsync(request.SlotId);
+                    
+                    var securityTask = new SecurityTask
+                    {
+                        Title = $"Unlock Room - {facility?.FacilityName ?? "Room"}",
+                        Description = $"Secure room {facility?.FacilityName} on {request.BookingDate:dd/MM/yyyy} at {slot?.StartTime}. Booked by: {currentUser?.FullName}. Purpose: {request.Purpose}",
+                        Priority = "Normal",
+                        Status = "Pending",
+                        CreatedBy = userId,
+                        BookingId = newBooking.BookingId,
+                        CreatedAt = DateTime.Now
+                    };
+                    
+                    await _securityTaskService.CreateTaskAsync(securityTask);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to create security task for auto-approved booking {newBooking.BookingId}: {ex.Message}");
+                }
+            }
+            
             return "Success";
         }
 
@@ -336,10 +366,12 @@ namespace FPT_Booking_BE.Services
             }).ToList();
         }
 
-        public async Task<string> UpdateStatus(int bookingId, string status, string? rejectionReason)
+        public async Task<string> UpdateStatus(int bookingId, string status, string? rejectionReason, int? assignedToUserId = null)
         {
             var booking = await _context.Bookings
                 .Include(b => b.Slot)
+                .Include(b => b.Facility)
+                .Include(b => b.User)
                 .FirstOrDefaultAsync(b => b.BookingId == bookingId);
 
             if (booking == null) return "NotFound";
@@ -380,6 +412,29 @@ namespace FPT_Booking_BE.Services
                     CreatedAt = DateTime.Now,
                     IsRead = false
                 });
+                
+                // Create security task for approved booking
+                try 
+                {
+                    var securityTask = new SecurityTask
+                    {
+                        Title = $"Unlock Room - {booking.Facility?.FacilityName ?? "Room"}",
+                        Description = $"Secure room {booking.Facility?.FacilityName} on {booking.BookingDate:dd/MM/yyyy} at {booking.Slot?.StartTime}. Booked by: {booking.User?.FullName}. Purpose: {booking.Purpose}",
+                        Priority = "Normal",
+                        Status = "Pending",
+                        CreatedBy = booking.UserId,
+                        AssignedToUserId = assignedToUserId, // Use provided security staff if specified
+                        BookingId = booking.BookingId,
+                        CreatedAt = DateTime.Now
+                    };
+                    
+                    await _securityTaskService.CreateTaskAsync(securityTask);
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail the approval if security task creation fails
+                    Console.WriteLine($"Failed to create security task for booking {booking.BookingId}: {ex.Message}");
+                }
             }
 
             await _context.SaveChangesAsync();
@@ -604,6 +659,38 @@ namespace FPT_Booking_BE.Services
                     };
                     await _context.Bookings.AddAsync(newBooking);
                     successCount++;
+                    
+                    // Auto-create security task if the booking is auto-approved (priority = 3)
+                    if (GetRolePriority(user.Role.RoleName) == 3)
+                    {
+                        try
+                        {
+                            await _context.SaveChangesAsync(); // Save to get BookingId
+                            
+                            var facility = await _context.Facilities
+                                .Include(f => f.Campus)
+                                .FirstOrDefaultAsync(f => f.FacilityId == finalFacilityId);
+                            
+                            var slot = await _context.Slots.FindAsync(request.SlotId);
+                            
+                            var securityTask = new SecurityTask
+                            {
+                                Title = $"Unlock Room - {facility?.FacilityName ?? "Room"}",
+                                Description = $"Secure room {facility?.FacilityName} on {dateStr} at {slot?.StartTime}. Purpose: {request.Purpose}",
+                                Priority = "Normal",
+                                Status = "Pending",
+                                CreatedBy = userId,
+                                BookingId = newBooking.BookingId,
+                                CreatedAt = DateTime.Now
+                            };
+                            
+                            await _securityTaskService.CreateTaskAsync(securityTask);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to create security task for recurring booking {newBooking.BookingId}: {ex.Message}");
+                        }
+                    }
                     //resultLog.Add($"{dateStr} ({dayName}): ✓ THÀNH CÔNG - {note}");
                 }
                 else
@@ -642,9 +729,12 @@ namespace FPT_Booking_BE.Services
         }
 
 
-        public async Task<string> UpdateRecurringStatus(string recurrenceId, string status)
+        public async Task<string> UpdateRecurringStatus(string recurrenceId, string status, int? assignedToUserId = null)
         {
             var bookings = await _context.Bookings
+                .Include(b => b.Facility)
+                .Include(b => b.Slot)
+                .Include(b => b.User)
                 .Where(b => b.RecurrenceGroupId == recurrenceId && b.Status != "Cancelled")
                 .ToListAsync();
 
@@ -653,14 +743,65 @@ namespace FPT_Booking_BE.Services
                 return "Không tìm thấy nhóm đơn đặt phòng này (hoặc mã không hợp lệ).";
             }
 
+            // Get the user ID from first booking to send notification
+            int userId = bookings.First().UserId;
+
             foreach (var booking in bookings)
             {
                 booking.Status = status;
-
-                 booking.RejectionReason = "Admin từ chối cả loạt"; 
+                booking.RejectionReason = status == "Rejected" ? "Admin từ chối cả loạt" : null;
+                
+                // Create security task when approving recurring bookings
+                if (status == "Approved")
+                {
+                    try
+                    {
+                        var securityTask = new SecurityTask
+                        {
+                            Title = $"Unlock Room - {booking.Facility?.FacilityName ?? "Room"}",
+                            Description = $"Secure room {booking.Facility?.FacilityName} on {booking.BookingDate:dd/MM/yyyy} at {booking.Slot?.StartTime}. Booked by: {booking.User?.FullName}. Purpose: {booking.Purpose}",
+                            Priority = "Normal",
+                            Status = "Pending",
+                            CreatedBy = booking.UserId,
+                            AssignedToUserId = assignedToUserId, // Use provided security staff if specified
+                            BookingId = booking.BookingId,
+                            CreatedAt = DateTime.Now
+                        };
+                        
+                        await _securityTaskService.CreateTaskAsync(securityTask);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to create security task for recurring booking {booking.BookingId}: {ex.Message}");
+                    }
+                }
             }
 
             await _context.SaveChangesAsync();
+
+            // Send notification to user
+            if (status == "Approved")
+            {
+                await _notificationService.CreateNotificationAsync(new Notification
+                {
+                    UserId = userId,
+                    Title = "Đặt phòng lặp lại đã được duyệt",
+                    Message = $"Nhóm đặt phòng lặp lại của bạn ({bookings.Count} đơn) đã được duyệt thành công.",
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                });
+            }
+            else if (status == "Rejected")
+            {
+                await _notificationService.CreateNotificationAsync(new Notification
+                {
+                    UserId = userId,
+                    Title = "Đặt phòng lặp lại bị từ chối",
+                    Message = $"Nhóm đặt phòng lặp lại của bạn ({bookings.Count} đơn) đã bị từ chối.",
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                });
+            }
 
             return $"Thành công! Đã cập nhật trạng thái {status} cho {bookings.Count} đơn đặt phòng.";
         }

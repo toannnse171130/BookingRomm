@@ -5117,23 +5117,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\alvin\\.nuget\\packages\\": {},
+    "C:\\Users\\socjohn\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\alvin\\OneDrive\\Máy tính\\fpt_booking_be\\fpt_booking_be\\FPT_Booking_BE.csproj",
+      "projectUniqueName": "D:\\Code\\SWP\\fpt_booking_be\\FPT_Booking_BE.csproj",
       "projectName": "FPT_Booking_BE",
-      "projectPath": "C:\\Users\\alvin\\OneDrive\\Máy tính\\fpt_booking_be\\fpt_booking_be\\FPT_Booking_BE.csproj",
-      "packagesPath": "C:\\Users\\alvin\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\alvin\\OneDrive\\Máy tính\\fpt_booking_be\\fpt_booking_be\\obj\\",
+      "projectPath": "D:\\Code\\SWP\\fpt_booking_be\\FPT_Booking_BE.csproj",
+      "packagesPath": "C:\\Users\\socjohn\\.nuget\\packages\\",
+      "outputPath": "D:\\Code\\SWP\\fpt_booking_be\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\alvin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\socjohn\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -5161,7 +5161,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.100"
     },
     "frameworks": {
       "net9.0": {
@@ -5211,6 +5211,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[9.0.11, 9.0.11]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[9.0.11, 9.0.11]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[9.0.11, 9.0.11]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[9.0.11, 9.0.11]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -5219,7 +5237,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

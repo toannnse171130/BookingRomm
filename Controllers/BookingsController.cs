@@ -51,7 +51,7 @@ namespace FPT_Booking_BE.Controllers
                 return BadRequest(new { message = "Trạng thái không hợp lệ. Chỉ chấp nhận 'Approved' hoặc 'Rejected'." });
             }
 
-            var result = await _bookingService.UpdateStatus(id, request.Status, request.RejectionReason);
+            var result = await _bookingService.UpdateStatus(id, request.Status, request.RejectionReason, request.AssignedToUserId);
 
             switch (result)
             {
@@ -141,7 +141,7 @@ namespace FPT_Booking_BE.Controllers
                 return BadRequest(new { message = "Trạng thái không hợp lệ. Chỉ chấp nhận 'Approved' hoặc 'Rejected'." });
             }
 
-            var result = await _bookingService.UpdateRecurringStatus(recurrenceId, request.Status);
+            var result = await _bookingService.UpdateRecurringStatus(recurrenceId, request.Status, request.AssignedToUserId);
 
             if (result.Contains("Không tìm thấy"))
             {
@@ -177,7 +177,7 @@ namespace FPT_Booking_BE.Controllers
 
             if (!isViewingPublicSchedule)
             {
-                if (role != "Admin" && role != "Manager" && role != "Staff" && role != "FacilityAdmin" && role != "Security")
+                if (role != "Admin" && role != "Manager" && role != "Staff" && role != "FacilityAdmin")
                 {
                     request.UserId = userId;
                 }

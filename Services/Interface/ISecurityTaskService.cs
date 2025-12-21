@@ -12,5 +12,7 @@ namespace FPT_Booking_BE.Services
         Task<IEnumerable<SecurityTaskDto>> GetAllTasksAsync();
 
         Task<bool> CompleteTaskAsync(int taskId, string reportNote);
+
+        Task<IEnumerable<SecurityStaffDto>> GetSecurityStaffWithTaskCountsAsync();
     }
 }

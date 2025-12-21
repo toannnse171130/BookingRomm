@@ -12,7 +12,7 @@ namespace FPT_Booking_BE.Services
         Task<List<RecurringBookingGroupDto>> GetRecurringBookingGroupsAsync(int? userId);
         Task<List<BookingHistoryDto>> GetBookingsByRecurringGroupId(string recurrenceGroupId);
 
-        Task<string> UpdateStatus(int bookingId, string status, string? rejectionReason);
+        Task<string> UpdateStatus(int bookingId, string status, string? rejectionReason, int? assignedToUserId = null);
         Task<List<int>> GetBookedSlots(int facilityId, DateOnly date);
 
         Task<string> CancelBooking(int userId, int bookingId);
@@ -21,7 +21,7 @@ namespace FPT_Booking_BE.Services
 
         Task<object> CreateRecurringBooking(int userId, BookingRecurringRequest request);
 
-        Task<string> UpdateRecurringStatus(string recurrenceId, string status);
+        Task<string> UpdateRecurringStatus(string recurrenceId, string status, int? assignedToUserId = null);
 
         Task<bool> StaffCancelBookingAsync(int bookingId, int staffId, string reason);
 

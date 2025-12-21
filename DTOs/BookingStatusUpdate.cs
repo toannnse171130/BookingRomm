@@ -4,5 +4,6 @@ namespace FPT_Booking_BE.DTOs
     {
         public string Status { get; set; } = string.Empty; 
         public string? RejectionReason { get; set; }
+        public int? AssignedToUserId { get; set; }
     }
 }

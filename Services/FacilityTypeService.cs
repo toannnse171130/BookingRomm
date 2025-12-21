@@ -1,6 +1,5 @@
 using FPT_Booking_BE.DTOs;
 using FPT_Booking_BE.Models;
-using FPT_Booking_BE.Repositories.Interface;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,36 +9,38 @@ namespace FPT_Booking_BE.Services
 {
     public class FacilityTypeService : IFacilityTypeService
     {
-        private readonly IFacilityTypeRepository _typeRepo;
-        public FacilityTypeService(IFacilityTypeRepository typeRepo)
+        private readonly FptFacilityBookingContext _context;
+
+        public FacilityTypeService(FptFacilityBookingContext context)
         {
-            _typeRepo = typeRepo;
+            _context = context;
         }
 
         public async Task<List<FacilityTypeDto>> GetAllTypes()
         {
-            var types = await _typeRepo.GetAllAsync();
-
-            return types.Select(t => new FacilityTypeDto
-            {
-                TypeId = t.TypeId,
-                TypeName = t.TypeName
-            }).ToList();
+            return await _context.FacilityTypes
+                .Select(t => new FacilityTypeDto
+                {
+                    TypeId = t.TypeId,
+                    TypeName = t.TypeName
+                })
+                .ToListAsync();
         }
 
         public async Task<string> CreateType(string typeName)
         {
-            var newType = new FacilityType { TypeName = typeName };
-            await _typeRepo.AddAsync(newType);
+            _context.FacilityTypes.Add(new FacilityType { TypeName = typeName });
+            await _context.SaveChangesAsync();
             return "Success";
         }
 
         public async Task<string> DeleteType(int id)
         {
-            var type = await _typeRepo.GetByIdAsync(id);
+            var type = await _context.FacilityTypes.FindAsync(id);
             if (type == null) return "Not found";
 
-            await _typeRepo.DeleteAsync(type);
+            _context.FacilityTypes.Remove(type); 
+            await _context.SaveChangesAsync();
             return "Success";
         }
     }

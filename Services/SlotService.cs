@@ -1,6 +1,5 @@
 using FPT_Booking_BE.DTOs;
 using FPT_Booking_BE.Models;
-using FPT_Booking_BE.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,24 +9,34 @@ namespace FPT_Booking_BE.Services
 {
     public class SlotService : ISlotService
     {
-        private readonly ISlotRepository _slotRepo;
+        private readonly FptFacilityBookingContext _context;
 
-        public SlotService(ISlotRepository slotRepo)
+        public SlotService(FptFacilityBookingContext context)
         {
-            _slotRepo = slotRepo;
+            _context = context;
         }
 
-        public async Task<List<SlotDto>> GetAllSlots(int? facilityId, DateOnly? date)
+       public async Task<List<SlotDto>> GetAllSlots(int? facilityId, DateOnly? date)
         {
-            var slots = await _slotRepo.GetAvailableSlotsAsync(facilityId, date);
+            var query = _context.Slots.AsQueryable();
 
-            return slots.Select(s => new SlotDto
+            if (facilityId.HasValue && date.HasValue)
+            {
+                query = query.Where(s => !_context.Bookings.Any(b =>
+                    b.SlotId == s.SlotId &&
+                    b.FacilityId == facilityId &&
+                    b.BookingDate == date &&
+                    b.Status == "Approved" 
+                ));
+            }
+
+            return await query.Select(s => new SlotDto
             {
                 SlotId = s.SlotId,
                 SlotName = s.SlotName,
                 StartTime = s.StartTime,
                 EndTime = s.EndTime
-            }).ToList();
+            }).ToListAsync();
         }
     }
 }

@@ -48,6 +48,14 @@ namespace FPT_Booking_BE.Controllers
             return Ok(tasks);
         }
 
+        [HttpGet("security-staff")]
+        [Authorize(Roles = "Admin,Manager,FacilityAdmin")]
+        public async Task<IActionResult> GetSecurityStaffWithTaskCounts()
+        {
+            var staffWithCounts = await _taskService.GetSecurityStaffWithTaskCountsAsync();
+            return Ok(staffWithCounts);
+        }
+
         [HttpGet("all")]
         [Authorize(Roles = "Admin,Manager,FacilityAdmin")]
         public async Task<IActionResult> GetAllTasks()

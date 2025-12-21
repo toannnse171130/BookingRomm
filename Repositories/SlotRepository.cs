@@ -12,21 +12,9 @@ namespace FPT_Booking_BE.Repositories
             _context = context;
         }
 
-        public async Task<List<Slot>> GetAvailableSlotsAsync(int? facilityId, DateOnly? date)
+        public async Task<IEnumerable<Slot>> GetAllSlots()
         {
-            var query = _context.Slots.AsQueryable();
-
-            if (facilityId.HasValue && date.HasValue)
-            {
-                query = query.Where(s => !_context.Bookings.Any(b =>
-                    b.SlotId == s.SlotId &&
-                    b.FacilityId == facilityId &&
-                    b.BookingDate == date &&
-                    b.Status == "Approved"
-                ));
-            }
-
-            return await query.ToListAsync();
+            return await _context.Slots.Where(s => s.IsActive == true).ToListAsync();
         }
     }
 }
