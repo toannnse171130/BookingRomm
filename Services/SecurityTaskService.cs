@@ -76,6 +76,7 @@ namespace FPT_Booking_BE.Services
                     Description = task.Description,
                     Status = task.Status,
                     Priority = task.Priority,
+                    TaskType = task.TaskType,
                     AssignedToUserId = task.AssignedToUserId,
                     AssignedToUserName = assignedToUserName,
                     CreatedBy = task.CreatedBy,
