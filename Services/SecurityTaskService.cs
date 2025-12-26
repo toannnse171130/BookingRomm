@@ -105,10 +105,24 @@ namespace FPT_Booking_BE.Services
                 .Include(t => t.Booking.Facility)
                 .FirstOrDefaultAsync(t => t.TaskId == taskId);
             if (task == null) return false;
+            Console.WriteLine("Completing task: " + task.TaskId + " with report note: " + reportNote);
+
+            if (task.Booking != null && reportNote == "No")
+            {
+                Console.WriteLine("Marking booking as No-Show for booking ID: " + task.Booking);
+                task.Booking.Status = "No-Show";
+                await _notiService.SendNotification(
+                    task.CreatedBy,
+                    "Thông báo không có mặt",
+                    $"Đặt chỗ của bạn tại {task.Booking.Facility?.FacilityName} vào ngày {task.Booking.BookingDate} đã được đánh dấu là No-Show."
+                );
+                Console.WriteLine("Booking marked as No-Show." + task.Booking.Status + task.Booking.BookingId);
+
+            }
             if (task.TaskType == "Check-in" && task.Booking != null && reportNote != "No")
             {
                 task.Booking.Status = "Checked-In";
-                CreateTaskAsync(new SecurityTask
+                await CreateTaskAsync(new SecurityTask
                 {
                     Title = $"Theo dõi Check-out cho đặt chỗ {task.Booking.Facility?.FacilityName}",
                     Description = $"Theo dõi việc check-out cho đặt chỗ {task.Booking.Facility?.FacilityName} slot {task.Booking.SlotId}",
@@ -119,9 +133,9 @@ namespace FPT_Booking_BE.Services
                     BookingId = task.BookingId,
                     CreatedBy = task.CreatedBy,
                     CreatedAt = DateTime.Now
-                }).Wait();
+                });
             }
-            if (task.TaskType == "Check-out" && task.Booking != null)
+            if (task.TaskType == "Check-out" && task.Booking != null && reportNote != "No")
             {
                 task.Booking.Status = "Completed";
             }
@@ -133,14 +147,7 @@ namespace FPT_Booking_BE.Services
             await _context.SaveChangesAsync();
 
             // Send notification to the booking creator
-            if (task.CreatedBy > 0)
-            {
-                await _notiService.SendNotification(
-                    task.CreatedBy,
-                    "Nhiệm vụ đã hoàn thành",
-                    $"Nhiệm vụ '{task.Title}' đã được hoàn thành bởi bảo vệ."
-                );
-            }
+
 
             return true;
         }
