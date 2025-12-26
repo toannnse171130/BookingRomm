@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FPT_Booking_BE.Migrations
 {
     [DbContext(typeof(FptFacilityBookingContext))]
-    [Migration("20251224060945_UpdateSomething")]
-    partial class UpdateSomething
+    [Migration("20251226014612_ChangeBookingSeed")]
+    partial class ChangeBookingSeed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

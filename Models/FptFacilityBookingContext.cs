@@ -579,8 +579,7 @@ public partial class FptFacilityBookingContext : DbContext
         );
 
         // Seed Bookings
-        var today = DateOnly.FromDateTime(DateTime.Now);
-        var tomorrow = today.AddDays(1);
+
         
         modelBuilder.Entity<Booking>().HasData(
             new Booking 
@@ -588,7 +587,7 @@ public partial class FptFacilityBookingContext : DbContext
                 BookingId = 1, 
                 UserId = 3, 
                 FacilityId = 1, 
-                BookingDate = today, 
+                BookingDate = new DateOnly(2025, 12, 24), 
                 SlotId = 1, 
                 Purpose = "Học nhóm Java",
                 Status = "Approved",
@@ -602,7 +601,7 @@ public partial class FptFacilityBookingContext : DbContext
                 BookingId = 2, 
                 UserId = 4, 
                 FacilityId = 2, 
-                BookingDate = tomorrow, 
+                BookingDate = new DateOnly(2025, 12, 25), 
                 SlotId = 2, 
                 Purpose = "Hội thảo Tech",
                 Status = "Pending",
